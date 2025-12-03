@@ -1,7 +1,6 @@
 #include "Inventory.h"
 
-Inventory::Inventory() {
-    // Start with some basic items
+Inventory::Inventory() : maxSize(20) {
     items.push_back(Item(ItemType::LEMBAS_BREAD));
     items.push_back(Item(ItemType::LEMBAS_BREAD));
     items.push_back(Item(ItemType::MITHRIL_OIL));

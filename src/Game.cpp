@@ -287,7 +287,7 @@ void Game::DrawCombat() {
     }
     
     // Actions
-    if (combat.isPlayerTurn()) {
+    if (!combat.isEnemyTurn()) {
         DrawText("Press [A] to attack  [I] for inventory", 300, 650, 20, RAYWHITE);
     } else {
         DrawText("Enemy is attacking...", 400, 650, 20, RED);

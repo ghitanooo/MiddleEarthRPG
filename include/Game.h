@@ -16,7 +16,7 @@ private:
     Combat combat;
     
     // UI state
-    std::string playerName;
+    char playerName[21];
     CharacterClass selectedClass;
     int selectedInventorySlot;
     int enemiesDefeated;

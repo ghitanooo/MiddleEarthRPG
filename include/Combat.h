@@ -12,25 +12,25 @@ struct CombatLog {
 class Combat {
 private:
     std::vector<CombatLog> battleLog;
-    const int maxLogEntries = 6;
+    int maxLogEntries;
     bool playerTurn;
-    float enemyAttackTimer;
-    const float enemyAttackDelay = 1.0f;
     
 public:
+    float enemyAttackTimer;
+    float enemyAttackDelay;
+    
     Combat();
     
-    // Combat methods
     void playerAttack(Player& player, Enemy& enemy);
     void enemyAttack(Player& player, Enemy& enemy);
     void reset();
     
-    // Log management
     void addLog(const std::string& message, Color color = RAYWHITE);
     const std::vector<CombatLog>& getLog() const { return battleLog; }
     
-    // Timer
     void updateTimer(float deltaTime);
-    bool isEnemyTurn() const { return !playerTurn; }
+   bool isEnemyTurn() const { return !playerTurn; }
+   bool isPlayerTurn() const { return playerTurn; }
     void setPlayerTurn(bool turn) { playerTurn = turn; }
-};
+    };  
+    

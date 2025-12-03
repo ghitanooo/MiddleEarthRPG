@@ -6,7 +6,7 @@
 class Inventory {
 private:
     std::vector<Item> items;
-    const int maxSize = 20;
+    int maxSize;
     
 public:
     Inventory();

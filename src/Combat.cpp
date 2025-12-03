@@ -1,7 +1,7 @@
 #include "Combat.h"
 #include "raylib.h"
 
-Combat::Combat() : playerTurn(true), enemyAttackTimer(0.0f) {}
+Combat::Combat() : maxLogEntries(6), playerTurn(true), enemyAttackDelay(1.0f), enemyAttackTimer(0.0f) {}
 
 void Combat::playerAttack(Player& player, Enemy& enemy) {
     if (!playerTurn) return;
