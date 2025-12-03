@@ -15,32 +15,28 @@ void Combat::playerAttack(Player& player, Enemy& enemy) {
         addLog(enemy.getName() + " defeated!", GREEN);
     } else {
         playerTurn = false;
-        enemyAttackTimer = 0.0f;
     }
 }
 
 void Combat::enemyAttack(Player& player, Enemy& enemy) {
     int damage = enemy.calculateDamage(player.getDefense());
-    player.takeDamage(damage);
-    
     addLog(enemy.getName() + " attacks for " + std::to_string(damage) + " damage!", RED);
-    
-    if (!player.isAlive()) {
-        addLog("You have been defeated...", DARKGRAY);
-    } else {
-        playerTurn = true;
-    }
+
+    // ✅ Apply the damage to the player
+    player.takeDamage(damage);
+    playerTurn = true;
+    enemyAttackTimer = 0.0f;
 }
+
+
 
 void Combat::updateTimer(float deltaTime) {
     if (!playerTurn) {
         enemyAttackTimer += deltaTime;
-        if (enemyAttackTimer >= enemyAttackDelay) {
-            // Enemy will attack in Game.cpp
-            enemyAttackTimer = 0.0f;
-        }
     }
 }
+
+
 
 void Combat::addLog(const std::string& message, Color color) {
     battleLog.push_back({message, color});

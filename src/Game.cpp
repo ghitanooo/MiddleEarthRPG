@@ -40,7 +40,13 @@ void Game::Update() {
         case GameState::GAME_OVER:
             UpdateGameOver();
             break;
-    }
+        case GameState::BATTLE_END:
+            if (GetTime() > battleEndTime) {
+            currentState = GameState::EXPLORATION; // or spawn next enemy
+            }
+        break;
+
+        }
     
     if (showLevelUpMessage) {
         levelUpTimer -= GetFrameTime();
@@ -68,6 +74,7 @@ void Game::Draw() {
         case GameState::GAME_OVER:
             DrawGameOver();
             break;
+
     }
     
     if (showLevelUpMessage) {
@@ -78,10 +85,8 @@ void Game::Draw() {
     }
 }
 
-// ===== UPDATE METHODS =====
 
 void Game::UpdateMenu() {
-    // Get keyboard input for name
     int key = GetCharPressed();
     while (key > 0) {
         if ((key >= 32) && (key <= 125) && (nameCharCount < maxNameLength - 1)) {
@@ -126,48 +131,68 @@ void Game::UpdateExploration() {
 }
 
 void Game::UpdateCombat() {
-    combat.updateTimer(GetFrameTime());
-    
-    if (combat.isEnemyTurn() && combat.enemyAttackTimer >= combat.enemyAttackDelay) {
-        combat.enemyAttack(*player, *currentEnemy);
-        
-        if (!player->isAlive()) {
-            currentState = GameState::GAME_OVER;
-            return;
-        }
-    }
-    
-    if (combat.isEnemyTurn()) return;
-    
-    if (IsKeyPressed(KEY_A)) {
-        combat.playerAttack(*player, *currentEnemy);
-        
-        if (!currentEnemy->isAlive()) {
-            int oldLevel = player->getLevel();
-            player->gainExperience(currentEnemy->getXpReward());
-            
-            if (player->getLevel() > oldLevel) {
-                showLevelUpMessage = true;
-                levelUpTimer = 2.0f;
+    // Enemy's turn
+    if (combat.isEnemyTurn()) {
+        combat.updateTimer(GetFrameTime());
+        if (combat.enemyAttackTimer >= combat.enemyAttackDelay) {
+            combat.enemyAttack(*player, *currentEnemy);
+            combat.enemyAttackTimer = 0.0f;
+
+            if (!player->isAlive()) {
+                combat.addLog("YOU DIED...", RED);
+                currentState = GameState::GAME_OVER;
+                return;
             }
-            
-            if (GetRandomValue(1, 100) <= 40) {
-                Item loot = Item::createRandomItem();
-                inventory.addItem(loot);
-                combat.addLog("Found " + loot.getName() + "!", GOLD);
-            }
-            
-            enemiesDefeated++;
-            delete currentEnemy;
-            currentEnemy = nullptr;
-            currentState = GameState::EXPLORATION;
         }
+        return; // wait for next frame
     }
-    
-    if (IsKeyPressed(KEY_I) && combat.isPlayerTurn()) {
-        currentState = GameState::INVENTORY;
+
+    // Player's turn
+    if (combat.isPlayerTurn()) {
+        if (IsKeyPressed(KEY_A)) {
+            combat.playerAttack(*player, *currentEnemy);
+
+            // ✅ Only exit combat if enemy truly dead
+            if (!currentEnemy->isAlive()) {
+                combat.addLog("YOU DEFEATED THE ENEMY!", GOLD);
+
+                int oldLevel = player->getLevel();
+                player->gainExperience(currentEnemy->getXpReward());
+
+                if (player->getLevel() > oldLevel) {
+                    showLevelUpMessage = true;
+                    levelUpTimer = 2.0f;
+                }
+
+                if (GetRandomValue(1, 100) <= 40) {
+                    Item loot = Item::createRandomItem();
+                    inventory.addItem(loot);
+                    combat.addLog("Found " + loot.getName() + "!", GOLD);
+                }
+
+                enemiesDefeated++;
+
+                // ✅ Safely delete enemy only if dead
+                delete currentEnemy;
+                currentEnemy = nullptr;
+
+                battleEndTime = GetTime() + 2.0;
+                currentState = GameState::BATTLE_END;
+                return;
+            } 
+            else {
+                // ✅ If enemy survived, hand turn to enemy
+                combat.setPlayerTurn(false);
+                combat.enemyAttackTimer = 0.0f;
+            }
+        }
+
+        if (IsKeyPressed(KEY_I)) {
+            currentState = GameState::INVENTORY;
+        }
     }
 }
+
 
 void Game::UpdateInventory() {
     if (IsKeyPressed(KEY_ESCAPE) || IsKeyPressed(KEY_I)) {

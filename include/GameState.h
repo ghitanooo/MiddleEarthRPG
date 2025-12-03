@@ -4,10 +4,12 @@ enum class GameState {
     MENU,
     CLASS_SELECT,
     EXPLORATION,
-    COMBAT,
     INVENTORY,
-    GAME_OVER
+    COMBAT,
+    GAME_OVER,
+    BATTLE_END  
 };
+
 
 enum class CharacterClass {
     WIZARD,
@@ -16,3 +18,5 @@ enum class CharacterClass {
     ELF,
     RANGER
 };
+
+
