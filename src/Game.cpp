@@ -40,11 +40,11 @@ void Game::Update() {
         case GameState::GAME_OVER:
             UpdateGameOver();
             break;
-        case GameState::BATTLE_END:
-            if (GetTime() > battleEndTime) {
-            currentState = GameState::EXPLORATION; // or spawn next enemy
-            }
-        break;
+        //case GameState::BATTLE_END:
+            //if (GetTime() > battleEndTime) {
+            //currentState = GameState::EXPLORATION; // or spawn next enemy
+           // }
+        //break;
 
         }
     
@@ -131,65 +131,53 @@ void Game::UpdateExploration() {
 }
 
 void Game::UpdateCombat() {
-    // Enemy's turn
+    // Enemy's turn - handle timer
     if (combat.isEnemyTurn()) {
         combat.updateTimer(GetFrameTime());
+        
         if (combat.enemyAttackTimer >= combat.enemyAttackDelay) {
             combat.enemyAttack(*player, *currentEnemy);
-            combat.enemyAttackTimer = 0.0f;
-
+            
             if (!player->isAlive()) {
-                combat.addLog("YOU DIED...", RED);
                 currentState = GameState::GAME_OVER;
                 return;
             }
+            // Enemy attacked, now it's player's turn 
         }
-        return; // wait for next frame
+        return; // Wait for enemy attack to complete
     }
 
-    // Player's turn
-    if (combat.isPlayerTurn()) {
-        if (IsKeyPressed(KEY_A)) {
-            combat.playerAttack(*player, *currentEnemy);
-
-            // ✅ Only exit combat if enemy truly dead
-            if (!currentEnemy->isAlive()) {
-                combat.addLog("YOU DEFEATED THE ENEMY!", GOLD);
-
-                int oldLevel = player->getLevel();
-                player->gainExperience(currentEnemy->getXpReward());
-
-                if (player->getLevel() > oldLevel) {
-                    showLevelUpMessage = true;
-                    levelUpTimer = 2.0f;
-                }
-
-                if (GetRandomValue(1, 100) <= 40) {
-                    Item loot = Item::createRandomItem();
-                    inventory.addItem(loot);
-                    combat.addLog("Found " + loot.getName() + "!", GOLD);
-                }
-
-                enemiesDefeated++;
-
-                // ✅ Safely delete enemy only if dead
-                delete currentEnemy;
-                currentEnemy = nullptr;
-
-                battleEndTime = GetTime() + 2.0;
-                currentState = GameState::BATTLE_END;
-                return;
-            } 
-            else {
-                // ✅ If enemy survived, hand turn to enemy
-                combat.setPlayerTurn(false);
-                combat.enemyAttackTimer = 0.0f;
+    // Player's turn - handle input
+    if (IsKeyPressed(KEY_A)) {
+        combat.playerAttack(*player, *currentEnemy);
+        
+        if (!currentEnemy->isAlive()) {
+            // Enemy died
+            int oldLevel = player->getLevel();
+            player->gainExperience(currentEnemy->getXpReward());
+            
+            if (player->getLevel() > oldLevel) {
+                showLevelUpMessage = true;
+                levelUpTimer = 2.0f;
             }
+            
+            if (GetRandomValue(1, 100) <= 40) {
+                Item loot = Item::createRandomItem();
+                inventory.addItem(loot);
+                combat.addLog("Found " + loot.getName() + "!", GOLD);
+            }
+            
+            enemiesDefeated++;
+            delete currentEnemy;
+            currentEnemy = nullptr;
+            currentState = GameState::EXPLORATION;
+            return;
         }
-
-        if (IsKeyPressed(KEY_I)) {
-            currentState = GameState::INVENTORY;
-        }
+        // Enemy survived, turn automatically switches in playerAttack()
+    }
+    
+    if (IsKeyPressed(KEY_I)) {
+        currentState = GameState::INVENTORY;
     }
 }
 

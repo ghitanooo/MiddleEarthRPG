@@ -26,7 +26,7 @@ private:
     // Input handling
     int nameCharCount;
     static const int maxNameLength = 20;
-    double battleEndTime = 0.0;
+    //double battleEndTime = 0.0;
     
 public:
     Game();

@@ -18,5 +18,6 @@ void Character::heal(int amount) {
 }
 
 int Character::calculateDamage(int enemyDefense) const {
-    return std::max(attack - enemyDefense, 5);
+    int netDamage = attack - enemyDefense;
+    return std::max(netDamage, 3);  // Minimum 3 damage instead of 5
 }
