@@ -1,0 +1,11 @@
+build/* linguist-vendored
+_deps/* linguist-vendored
+raylib/* linguist-vendored
+external/* linguist-vendored
+
+CMakeLists.txt linguist-vendored
+*.cmake linguist-vendored
+Makefile linguist-vendored
+
+*.cpp linguist-language=C++
+*.h linguist-language=C++
