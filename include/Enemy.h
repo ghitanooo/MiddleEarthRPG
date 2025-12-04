@@ -17,11 +17,9 @@ private:
 public:
     Enemy(EnemyType t);
     
-    // Getters
     EnemyType getType() const { return type; }
     int getXpReward() const { return xpReward; }
     
-    // Static factory method
     static Enemy* createRandomEnemy(int playerLevel);
     
 private:

@@ -20,7 +20,7 @@ void Combat::playerAttack(Player& player, Enemy& enemy) {
 
 void Combat::enemyAttack(Player& player, Enemy& enemy) {
     int damage = enemy.calculateDamage(player.getDefense());
-    player.takeDamage(damage);  // Apply damage FIRST
+    player.takeDamage(damage); 
     
     addLog(enemy.getName() + " attacks for " + std::to_string(damage) + " damage!", RED);
     
@@ -28,7 +28,7 @@ void Combat::enemyAttack(Player& player, Enemy& enemy) {
         addLog("You have been defeated...", DARKGRAY);
     }
     
-    playerTurn = true;  // Switch turn AFTER damage
+    playerTurn = true;  
     enemyAttackTimer = 0.0f;
 }
 

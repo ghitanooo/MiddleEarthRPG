@@ -7,7 +7,8 @@ enum class GameState {
     INVENTORY,
     COMBAT,
     GAME_OVER,
-    //BATTLE_END  
+    //BATTLE_END,
+    VICTORY
 };
 
 

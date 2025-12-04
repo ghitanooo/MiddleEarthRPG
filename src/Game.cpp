@@ -1,9 +1,9 @@
 #include "Game.h"
 #include <cstring>
 
-Game::Game() 
-    : currentState(GameState::MENU), 
-      player(nullptr), 
+Game::Game()
+    : currentState(GameState::MENU),
+      player(nullptr),
       currentEnemy(nullptr),
       selectedClass(CharacterClass::WIZARD),
       selectedInventorySlot(-1),
@@ -11,13 +11,40 @@ Game::Game()
       showLevelUpMessage(false),
       levelUpTimer(0.0f),
       nameCharCount(0) {
-    
+
     memset(&playerName[0], 0, sizeof(playerName));
+
+    // LOAD CLASS ICONS ONCE
+    wizardIcon = LoadTexture("assets/icons/wizard.png");
+    hobbitIcon = LoadTexture("assets/icons/hobbit.png");
+    dwarfIcon  = LoadTexture("assets/icons/dwarf.png");
+    elfIcon    = LoadTexture("assets/icons/elf.png");
+    rangerIcon = LoadTexture("assets/icons/ranger.png");
+    // LOAD STAT ICONS
+    attackIcon = LoadTexture("assets/icons/attack.png");
+    defenseIcon = LoadTexture("assets/icons/defense.png");
+    hpIcon = LoadTexture("assets/icons/hp.png");
+    xpIcon = LoadTexture("assets/icons/xp.png");
+    killsIcon = LoadTexture("assets/icons/kills.png");
+
 }
+
 
 Game::~Game() {
     delete player;
     delete currentEnemy;
+    UnloadTexture(wizardIcon);
+    UnloadTexture(hobbitIcon);
+    UnloadTexture(dwarfIcon);
+    UnloadTexture(elfIcon);
+    UnloadTexture(rangerIcon);
+    UnloadTexture(attackIcon);
+    UnloadTexture(defenseIcon);
+    UnloadTexture(hpIcon);
+    UnloadTexture(xpIcon);
+    UnloadTexture(killsIcon);
+
+
 }
 
 void Game::Update() {
@@ -40,19 +67,17 @@ void Game::Update() {
         case GameState::GAME_OVER:
             UpdateGameOver();
             break;
-        //case GameState::BATTLE_END:
-            //if (GetTime() > battleEndTime) {
-            //currentState = GameState::EXPLORATION; // or spawn next enemy
-           // }
-        //break;
-
-        }
+        case GameState::VICTORY:
+            UpdateVictory();
+            break;
+    }
     
     if (showLevelUpMessage) {
         levelUpTimer -= GetFrameTime();
         if (levelUpTimer <= 0) showLevelUpMessage = false;
     }
 }
+
 
 void Game::Draw() {
     switch(currentState) {
@@ -74,8 +99,10 @@ void Game::Draw() {
         case GameState::GAME_OVER:
             DrawGameOver();
             break;
-
-    }
+        case GameState::VICTORY:
+            DrawVictory();
+            break;
+        }
     
     if (showLevelUpMessage) {
         DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.7f));
@@ -131,7 +158,7 @@ void Game::UpdateExploration() {
 }
 
 void Game::UpdateCombat() {
-    // Enemy's turn - handle timer
+    // Enemys turn 
     if (combat.isEnemyTurn()) {
         combat.updateTimer(GetFrameTime());
         
@@ -142,12 +169,11 @@ void Game::UpdateCombat() {
                 currentState = GameState::GAME_OVER;
                 return;
             }
-            // Enemy attacked, now it's player's turn 
         }
-        return; // Wait for enemy attack to complete
+        return;
     }
 
-    // Player's turn - handle input
+    // Players turn
     if (IsKeyPressed(KEY_A)) {
         combat.playerAttack(*player, *currentEnemy);
         
@@ -170,10 +196,14 @@ void Game::UpdateCombat() {
             enemiesDefeated++;
             delete currentEnemy;
             currentEnemy = nullptr;
-            currentState = GameState::EXPLORATION;
-            return;
-        }
-        // Enemy survived, turn automatically switches in playerAttack()
+
+            if (enemiesDefeated % 3 == 0) {  //  3 enemies = victory
+                 currentState = GameState::VICTORY;
+                } else {
+                    currentState = GameState::EXPLORATION;
+                    }
+                return;
+            }
     }
     
     if (IsKeyPressed(KEY_I)) {
@@ -207,157 +237,261 @@ void Game::UpdateGameOver() {
         ResetGame();
     }
 }
+void Game::UpdateVictory() {
+    if (IsKeyPressed(KEY_R)) {
+        ResetGame();
+    }
+    if (IsKeyPressed(KEY_B)) {
+        SpawnEnemy();
+        currentState = GameState::COMBAT;
+    }
+}
 
-// ===== DRAW METHODS =====
-
-void Game::DrawMenu() {
-    DrawText("JOURNEY THROUGH MIDDLE-EARTH", 200, 100, 40, GOLD);
-    DrawText("A Mini RPG Adventure", 350, 150, 20, ORANGE);
+void Game::DrawVictory() {
+    ClearBackground(Color{245, 235, 220, 255});
     
-    DrawRectangle(300, 250, 400, 60, DARKGRAY);
-    DrawRectangleLines(300, 250, 400, 60, GOLD);
-    DrawText("Enter your name:", 320, 220, 20, RAYWHITE);
-    DrawText(playerName, 320, 265, 30, RAYWHITE);
+    DrawText("=== VICTORY ===", 350, 200, 50, Color{34, 139, 34, 255});
+    DrawText(TextFormat("%s triumphs!", player->getName().c_str()), 300, 280, 30, Color{139, 69, 19, 255});
+    DrawText(TextFormat("Level: %d", player->getLevel()), 400, 340, 25, Color{85, 107, 47, 255});
+    DrawText(TextFormat("Enemies Defeated: %d", enemiesDefeated), 330, 380, 25, Color{85, 107, 47, 255});
+    
+    DrawText("Press [B] for next battle", 350, 480, 20, Color{107, 142, 35, 255});
+    DrawText("Press [R] to restart", 380, 520, 20, Color{160, 82, 45, 255});
+}
+
+//DRAAAAAAAAAAAAAAAAAAAAAWWWWWWWWWWWWWWWWWWWWWW METHODS
+void Game::DrawMenu() {
+    ClearBackground(Color{245, 235, 220, 255}); 
+    
+    DrawText("JOURNEY THROUGH", 280, 80, 45, Color{139, 69, 19, 255});
+    DrawText("MIDDLE-EARTH", 310, 135, 45, Color{85, 107, 47, 255});
+    DrawText("~ A Mini RPG Adventure ~", 340, 190, 22, Color{160, 82, 45, 255});
+    
+    DrawRectangle(300, 270, 424, 70, Color{222, 213, 195, 255});
+    DrawRectangleLines(300, 270, 424, 70, Color{139, 69, 19, 255});
+    DrawText("Enter thy name, traveler:", 320, 240, 22, Color{85, 107, 47, 255});
+    DrawText(playerName, 320, 290, 28, Color{34, 139, 34, 255});
     
     if (nameCharCount > 0) {
-        DrawText("Press ENTER to continue", 360, 350, 20, GREEN);
+        DrawText("Press ENTER to begin thy quest", 330, 380, 22, Color{34, 139, 34, 255});
     } else {
-        DrawText("Type your hero's name...", 360, 350, 20, GRAY);
+        DrawText("Speak thy name...", 390, 380, 20, Color{160, 82, 45, 200});
     }
 }
 
 void Game::DrawClassSelect() {
-    DrawText("CHOOSE YOUR CLASS", 320, 80, 35, GOLD);
+    ClearBackground(Color{245, 235, 220, 255});
     
-    const char* classes[] = {"[1] WIZARD", "[2] HOBBIT", "[3] DWARF", "[4] ELF", "[5] RANGER"};
-    const char* stats[] = {
-    "HP:70  ATK:18 DEF:2",
-    "HP:90  ATK:12 DEF:6",
-    "HP:110 ATK:14 DEF:8",
-    "HP:80  ATK:16 DEF:4",
-    "HP:85  ATK:15 DEF:5"
-    };
-    
-    for (int i = 0; i < 5; i++) {
-        Color color = (selectedClass == static_cast<CharacterClass>(i)) ? GOLD : RAYWHITE;
-        DrawText(classes[i], 350, 180 + i * 60, 25, color);
-        DrawText(stats[i], 370, 205 + i * 60, 18, GRAY);
+DrawText("CHOOSE THY PATH", 320, 60, 40, Color{139, 69, 19, 255});
+
+const char* classes[] = {
+    "[1] WIZARD", 
+    "[2] HOBBIT", 
+    "[3] DWARF", 
+    "[4] ELF", 
+    "[5] RANGER"
+};
+
+const char* stats[] = {
+    "HP:70  ATK:18 DEF:2  - Glass Cannon",
+    "HP:90  ATK:12 DEF:6  - Sturdy & Brave",
+    "HP:110 ATK:14 DEF:8  - Mountain Strong",
+    "HP:80  ATK:16 DEF:4  - Swift & Deadly",
+    "HP:85  ATK:15 DEF:5  - Jack of All Trades"
+};
+
+int startY = 140;
+int spacing = 85;
+
+for (int i = 0; i < 5; i++) {
+    bool isSelected = (selectedClass == static_cast<CharacterClass>(i));
+
+    Color boxColor  = isSelected ? Color{34, 139, 34, 80} : Color{222, 213, 195, 255};
+    Color textColor = isSelected ? Color{34, 139, 34, 255} : Color{85, 107, 47, 255};
+
+    DrawRectangle(200, startY + i * spacing, 624, 70, boxColor);
+    DrawRectangleLines(200, startY + i * spacing, 624, 70, Color{139, 69, 19, 255});
+
+    Texture2D icon;
+    switch (i) {
+        case 0: icon = wizardIcon; break;
+        case 1: icon = hobbitIcon; break;
+        case 2: icon = dwarfIcon;  break;
+        case 3: icon = elfIcon;    break;
+        case 4: icon = rangerIcon; break;
     }
-    
-    DrawText("Press ENTER to start", 370, 600, 20, GREEN);
+
+    DrawTextureEx(icon, {202, (float)(startY + i * spacing + 15)}, 0.0f, 0.55f, Fade(WHITE, 1.0f));
+
+    DrawText(classes[i], 270, startY + i * spacing + 12, 26, textColor);
+    DrawText(stats[i], 270, startY + i * spacing + 38, 16, Color{160, 82, 45, 255});
+}
+
+DrawText("Press ENTER to embark", 370, 680, 22, Color{34, 139, 34, 255});
+
 }
 
 void Game::DrawExploration() {
-    // Title
-    DrawText("MIDDLE-EARTH", 400, 30, 30, GOLD);
+    ClearBackground(Color{245, 235, 220, 255});
     
-    // Player stats
-    DrawRectangle(50, 100, 300, 200, Fade(DARKGRAY, 0.8f));
-    DrawRectangleLines(50, 100, 300, 200, GOLD);
-    DrawText(player->getName().c_str(), 70, 120, 25, RAYWHITE);
-    DrawText(TextFormat("Level %d %s", player->getLevel(), player->getClassName().c_str()), 70, 150, 18, GRAY);
+    DrawText("~ THE SHIRE ~", 380, 25, 35, Color{34, 139, 34, 255});
     
-    DrawHealthBar({70, 180, 250, 20}, player->getCurrentHp(), player->getMaxHp(), RED);
-    DrawText(TextFormat("HP: %d/%d", player->getCurrentHp(), player->getMaxHp()), 75, 182, 16, WHITE);
+    DrawRectangle(70, 100, 350, 240, Color{222, 213, 195, 255});
+    DrawRectangleLines(70, 100, 350, 240, Color{139, 69, 19, 255});
     
-    DrawText(TextFormat("ATK: %d  DEF: %d", player->getAttack(), player->getDefense()), 70, 210, 18, ORANGE);
-    DrawText(TextFormat("XP: %d/%d", player->getExperience(), player->getXpToNextLevel()), 70, 235, 18, SKYBLUE);
-    DrawText(TextFormat("Enemies Defeated: %d", enemiesDefeated), 70, 260, 18, GOLD);
+    DrawText(player->getName().c_str(), 90, 120, 28, Color{85, 107, 47, 255});
+    DrawText(TextFormat("Lv.%d %s", player->getLevel(), player->getClassName().c_str()), 
+             90, 150, 20, Color{160, 82, 45, 255});
     
-    // Actions
-    DrawRectangle(400, 300, 300, 100, Fade(DARKGRAY, 0.8f));
-    DrawRectangleLines(400, 300, 300, 100, RED);
-    DrawText("Press [B] to seek battle", 420, 330, 20, RED);
+    DrawHealthBar({90, 185, 320, 25}, player->getCurrentHp(), player->getMaxHp(), 
+                  Color{220, 20, 60, 255});
+    DrawText(TextFormat("HP: %d/%d", player->getCurrentHp(), player->getMaxHp()), 
+             95, 188, 18, Color{255, 255, 255, 255});
     
-    DrawText("Press [I] for inventory", 400, 600, 18, GRAY);
+
+    // ATK + DEF
+    DrawTextureEx(attackIcon, {90, 220}, 0.0f, 0.35f, WHITE);
+    DrawText(TextFormat("%d", player->getAttack()), 125, 225, 20, Color{139, 69, 19, 255});
+
+    DrawTextureEx(defenseIcon, {180, 220}, 0.0f, 0.35f, WHITE);
+    DrawText(TextFormat("%d", player->getDefense()), 215, 225, 20, Color{85, 107, 47, 255});
+
+    // XP
+    DrawTextureEx(xpIcon, {90, 250}, 0.0f, 0.35f, WHITE);
+    DrawText(TextFormat("%d/%d XP", player->getExperience(), player->getXpToNextLevel()), 125, 255, 18, Color{85, 107, 47, 255});
+
+    // Foes Vanquished
+    DrawTextureEx(killsIcon, {90, 280}, 0.0f, 0.35f, WHITE);
+    DrawText(TextFormat("Foes Vanquished: %d", enemiesDefeated), 125, 285, 18, Color{34, 139, 34, 255});
+
+    
+    // Action button
+    DrawRectangle(520, 250, 350, 90, Color{34, 139, 34, 100});
+    DrawRectangleLines(520, 250, 350, 90, Color{34, 139, 34, 255});
+    DrawText("Press [B]", 630, 270, 24, Color{34, 139, 34, 255});
+    DrawText("to seek adventure!", 590, 300, 20, Color{85, 107, 47, 255});
+    
+    DrawText("Press [I] to check thy pack", 370, 700, 20, Color{160, 82, 45, 255});
 }
 
 void Game::DrawCombat() {
-    DrawText("=== BATTLE ===", 420, 30, 30, RED);
+    ClearBackground(Color{245, 235, 220, 255});
     
-    // Player side
-    DrawRectangle(50, 100, 350, 250, Fade(DARKGREEN, 0.3f));
-    DrawRectangleLines(50, 100, 350, 250, GREEN);
-    DrawText(player->getName().c_str(), 70, 120, 22, GREEN);
-    DrawText(player->getClassName().c_str(), 70, 145, 16, DARKGREEN);
-    DrawCharacterStats(70, 170, player);
+    DrawText("=== BATTLE ===", 380, 20, 35, Color{220, 20, 60, 255});
     
-    // Enemy side
-    DrawRectangle(600, 100, 350, 250, Fade(DARKPURPLE, 0.3f));
-    DrawRectangleLines(600, 100, 350, 250, RED);
-    DrawText(currentEnemy->getName().c_str(), 620, 120, 22, RED);
-    DrawCharacterStats(620, 170, currentEnemy);
+    // Player side 
+    DrawRectangle(70, 90, 400, 270, Color{144, 238, 144, 100});
+    DrawRectangleLines(70, 90, 400, 270, Color{34, 139, 34, 255});
+    DrawText(player->getName().c_str(), 90, 110, 24, Color{34, 139, 34, 255});
+    DrawText(player->getClassName().c_str(), 90, 138, 18, Color{85, 107, 47, 255});
+    DrawCharacterStats(90, 170, player);
     
-    // Combat log
-    DrawRectangle(50, 400, 900, 200, Fade(BLACK, 0.8f));
-    DrawRectangleLines(50, 400, 900, 200, GOLD);
-    DrawText("[ BATTLE LOG ]", 60, 410, 18, GOLD);
+    // Enemy side 
+    DrawRectangle(554, 90, 400, 270, Color{255, 182, 193, 100});
+    DrawRectangleLines(554, 90, 400, 270, Color{220, 20, 60, 255});
+    DrawText(currentEnemy->getName().c_str(), 574, 110, 24, Color{220, 20, 60, 255});
+    DrawCharacterStats(574, 170, currentEnemy);
+    
+    // Battle log 
+    DrawRectangle(70, 390, 884, 220, Color{250, 240, 230, 255});
+    DrawRectangleLines(70, 390, 884, 220, Color{139, 69, 19, 255});
+    DrawText("[ CHRONICLE OF BATTLE ]", 80, 405, 20, Color{139, 69, 19, 255});
     
     int yPos = 440;
     for (const auto& log : combat.getLog()) {
-        DrawText(log.message.c_str(), 60, yPos, 16, log.color);
-        yPos += 25;
+        DrawText(log.message.c_str(), 80, yPos, 17, log.color);
+        yPos += 27;
     }
     
     // Actions
     if (!combat.isEnemyTurn()) {
-        DrawText("Press [A] to attack  [I] for inventory", 300, 650, 20, RAYWHITE);
+        DrawText("Press [A] to strike    [I] for inventory", 305, 670, 22, Color{34, 139, 34, 255});
     } else {
-        DrawText("Enemy is attacking...", 400, 650, 20, RED);
+        DrawText("The foe attacks...", 410, 670, 22, Color{220, 20, 60, 255});
     }
 }
 
 void Game::DrawInventory() {
-    DrawText("=== INVENTORY ===", 380, 50, 30, GOLD);
+    ClearBackground(Color{245, 235, 220, 255});
     
-    int x = 100;
-    int y = 150;
-    int slotSize = 120;
+    DrawText("=== THY PACK ===", 390, 40, 35, Color{139, 69, 19, 255});
+    
+    int x = 140;
+    int y = 140;
+    int slotSize = 130;
     int spacing = 20;
     
     for (int i = 0; i < inventory.getSize(); i++) {
         Rectangle slot = {
-            (float)x + (i % 6) * (slotSize + spacing),
-            (float)y + (i / 6) * (slotSize + spacing),
+            (float)x + (i % 5) * (slotSize + spacing),
+            (float)y + (i / 5) * (slotSize + spacing),
             (float)slotSize,
             (float)slotSize
         };
         
-        DrawRectangleRec(slot, DARKGRAY);
-        DrawRectangleLinesEx(slot, 2, GOLD);
+        DrawRectangleRec(slot, Color{222, 213, 195, 255});
+        DrawRectangleLinesEx(slot, 3, Color{139, 69, 19, 255});
         
         const Item& item = inventory.getItem(i);
-        DrawText(TextFormat("[%d]", i + 1), slot.x + 5, slot.y + 5, 16, GRAY);
-        DrawText(item.getName().c_str(), slot.x + 10, slot.y + 40, 14, RAYWHITE);
-        DrawText(TextFormat("Value: %d", item.getValue()), slot.x + 10, slot.y + 65, 12, SKYBLUE);
+        DrawText(TextFormat("[%d]", i + 1), slot.x + 8, slot.y + 8, 18, Color{160, 82, 45, 255});
+        DrawText(item.getName().c_str(), slot.x + 12, slot.y + 50, 16, Color{34, 139, 34, 255});
+        DrawText(TextFormat("+%d", item.getValue()), slot.x + 12, slot.y + 80, 15, Color{85, 107, 47, 255});
     }
     
-    DrawText("Press number keys to use items", 300, 600, 20, GRAY);
-    DrawText("Press [I] or [ESC] to close", 320, 630, 20, GRAY);
+    DrawText("Press number to use    [I]/[ESC] to close", 310, 680, 20, Color{160, 82, 45, 255});
 }
 
 void Game::DrawGameOver() {
-    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.8f));
+    ClearBackground(Color{50, 40, 35, 255}); 
     
-    DrawText("DEFEATED", 380, 250, 50, RED);
-    DrawText(TextFormat("Enemies Defeated: %d", enemiesDefeated), 380, 350, 25, GRAY);
-    DrawText(TextFormat("Level Reached: %d", player->getLevel()), 380, 390, 25, GRAY);
+    DrawText("THOU HAST FALLEN", 310, 220, 50, Color{220, 20, 60, 255});
+    DrawText(TextFormat("Foes Vanquished: %d", enemiesDefeated), 370, 330, 26, Color{245, 235, 220, 255});
+    DrawText(TextFormat("Level Reached: %d", player->getLevel()), 390, 370, 26, Color{245, 235, 220, 255});
     
-    DrawText("Press [R] to restart", 390, 500, 20, GREEN);
+    DrawText("Press [R] to try again", 380, 480, 24, Color{34, 139, 34, 255});
+}
+void Game::DrawCharacterStats(int x, int y, Character* character) {
+    DrawHealthBar({(float)x, (float)y, 280, 28}, 
+                  character->getCurrentHp(), 
+                  character->getMaxHp(), 
+                  Color{220, 20, 60, 255});
+    DrawText(TextFormat("HP: %d/%d", character->getCurrentHp(), character->getMaxHp()), 
+             x + 8, y + 6, 18, Color{255, 255, 255, 255});
+    
+    // Draw stat icons
+    DrawTextureEx(attackIcon, {(float)x, (float)(y + 45)}, 0.0f, 0.35f, WHITE);
+    DrawText(TextFormat("%d", character->getAttack()), x + 40, y + 50, 20, Color{139, 69, 19, 255});
+
+    DrawTextureEx(defenseIcon, {(float)x + 120, (float)(y + 45)}, 0.0f, 0.35f, WHITE);
+    DrawText(TextFormat("%d", character->getDefense()), x + 160, y + 50, 20, Color{85, 107, 47, 255});
+
 }
 
-// ===== HELPER METHODS =====
+// HELPEEEEEEEEEEEEEEEEEEEER METHODS
 
 void Game::StartGame() {
+    delete player;
     player = new Player(playerName, selectedClass);
+    enemiesDefeated = 0;
+    currentEnemy = nullptr;
     currentState = GameState::EXPLORATION;
-    combat.addLog("Your journey begins...", GOLD);
+
 }
 
 void Game::SpawnEnemy() {
-    currentEnemy = Enemy::createRandomEnemy(player->getLevel());
-    combat.reset();
-    combat.addLog("A wild " + currentEnemy->getName() + " appears!", RED);
+    delete currentEnemy;
+
+    int enemyType = GetRandomValue(1, 3);
+    if (enemyType == 1)
+        currentEnemy = new Enemy(EnemyType::GOBLIN_SCOUT);
+    else if (enemyType == 2)
+        currentEnemy = new Enemy(EnemyType::ORC_WARRIOR);
+    else
+        currentEnemy = new Enemy(EnemyType::NAZGUL);
+
+
+    combat.reset();           
+    combat.setPlayerTurn(true);
     currentState = GameState::COMBAT;
 }
 
@@ -366,33 +500,16 @@ void Game::ResetGame() {
     delete currentEnemy;
     player = nullptr;
     currentEnemy = nullptr;
-    inventory = Inventory();
-    combat = Combat();
     enemiesDefeated = 0;
+    showLevelUpMessage = false;
+    levelUpTimer = 0.0f;
     nameCharCount = 0;
-    memset(&playerName[0], 0, sizeof(playerName));
+    playerName[0] = '\0';
     currentState = GameState::MENU;
 }
 
 void Game::DrawHealthBar(Rectangle bounds, int current, int max, Color color) {
-    DrawRectangleRec(bounds, DARKGRAY);
-    
-    float percentage = (float)current / (float)max;
-    Rectangle fillBar = bounds;
-    fillBar.width *= percentage;
-    DrawRectangleRec(fillBar, color);
-    
     DrawRectangleLinesEx(bounds, 2, BLACK);
-}
-
-void Game::DrawCharacterStats(int x, int y, Character* character) {
-    DrawHealthBar({(float)x, (float)y, 250, 25}, 
-                  character->getCurrentHp(), 
-                  character->getMaxHp(), 
-                  RED);
-    DrawText(TextFormat("HP: %d/%d", character->getCurrentHp(), character->getMaxHp()), 
-             x + 5, y + 5, 16, WHITE);
-    
-    DrawText(TextFormat("ATK: %d", character->getAttack()), x, y + 40, 18, ORANGE);
-    DrawText(TextFormat("DEF: %d", character->getDefense()), x + 150, y + 40, 18, BLUE);
+    float filledWidth = (float)current / (float)max * bounds.width;
+    DrawRectangle(bounds.x, bounds.y, filledWidth, bounds.height, color);
 }

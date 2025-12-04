@@ -15,18 +15,24 @@ private:
     Inventory inventory;
     Combat combat;
     
-    // UI state
+    
     char playerName[21];
     CharacterClass selectedClass;
     int selectedInventorySlot;
     int enemiesDefeated;
     bool showLevelUpMessage;
     float levelUpTimer;
+
+    Texture2D wizardIcon;
+    Texture2D hobbitIcon;
+    Texture2D dwarfIcon;
+    Texture2D elfIcon;
+    Texture2D rangerIcon;
+    Texture2D attackIcon, defenseIcon, hpIcon, xpIcon, killsIcon;
+
     
-    // Input handling
     int nameCharCount;
     static const int maxNameLength = 20;
-    //double battleEndTime = 0.0;
     
 public:
     Game();
@@ -36,7 +42,6 @@ public:
     void Draw();
     
 private:
-    // Update methods
     void UpdateMenu();
     void UpdateClassSelect();
     void UpdateExploration();
@@ -44,19 +49,21 @@ private:
     void UpdateInventory();
     void UpdateGameOver();
     
-    // Draw methods
     void DrawMenu();
     void DrawClassSelect();
     void DrawExploration();
     void DrawCombat();
     void DrawInventory();
     void DrawGameOver();
+    void UpdateVictory();
+    void DrawVictory();
     
-    // Helper methods
     void StartGame();
     void SpawnEnemy();
     void ResetGame();
     void DrawButton(Rectangle bounds, const char* text, bool hover);
     void DrawHealthBar(Rectangle bounds, int current, int max, Color color);
     void DrawCharacterStats(int x, int y, Character* character);
+
+
 };

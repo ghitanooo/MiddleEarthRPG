@@ -9,7 +9,6 @@ bool Character::isAlive() const {
 }
 
 void Character::takeDamage(int damage) {
-    // Damage is already calculated, just apply it
     currentHp = std::max(currentHp - damage, 0);
 }
 
