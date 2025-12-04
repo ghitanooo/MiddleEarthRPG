@@ -444,7 +444,7 @@ void Game::DrawInventory() {
 void Game::DrawGameOver() {
     ClearBackground(Color{50, 40, 35, 255}); 
     
-    DrawText("THOU HAST FALLEN", 310, 220, 50, Color{220, 20, 60, 255});
+    DrawText("THOU HAST FALLEN !", 250, 220, 50, Color{220, 20, 60, 255});
     DrawText(TextFormat("Foes Vanquished: %d", enemiesDefeated), 370, 330, 26, Color{245, 235, 220, 255});
     DrawText(TextFormat("Level Reached: %d", player->getLevel()), 390, 370, 26, Color{245, 235, 220, 255});
     
