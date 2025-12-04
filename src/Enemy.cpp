@@ -41,10 +41,10 @@ void Enemy::getEnemyStats(EnemyType type, std::string& name, int& hp, int& atk, 
 }
 
 Enemy* Enemy::createRandomEnemy(int playerLevel) {
-    int maxTier = (playerLevel - 1) / 2;
-    if (maxTier > 4) maxTier = 4;
+    int minTier = std::max(0, (playerLevel - 1) / 3);
+    int maxTier = std::min(4, (playerLevel + 2) / 2);
     
-    int randomTier = GetRandomValue(0, maxTier);
+    int randomTier = GetRandomValue(minTier, maxTier);
     EnemyType type = static_cast<EnemyType>(randomTier);
     
     return new Enemy(type);

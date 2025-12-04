@@ -231,11 +231,11 @@ void Game::DrawClassSelect() {
     
     const char* classes[] = {"[1] WIZARD", "[2] HOBBIT", "[3] DWARF", "[4] ELF", "[5] RANGER"};
     const char* stats[] = {
-        "HP:80  ATK:25 DEF:3",
-        "HP:100 ATK:15 DEF:8",
-        "HP:120 ATK:20 DEF:10",
-        "HP:90  ATK:22 DEF:5",
-        "HP:110 ATK:18 DEF:7"
+    "HP:70  ATK:18 DEF:2",
+    "HP:90  ATK:12 DEF:6",
+    "HP:110 ATK:14 DEF:8",
+    "HP:80  ATK:16 DEF:4",
+    "HP:85  ATK:15 DEF:5"
     };
     
     for (int i = 0; i < 5; i++) {

@@ -16,19 +16,19 @@ Player::Player(std::string n, CharacterClass cls)
 void Player::getClassStats(CharacterClass cls, int& hp, int& atk, int& def) {
     switch(cls) {
         case CharacterClass::WIZARD:
-            hp = 80; atk = 25; def = 3;
+            hp = 70; atk = 18; def = 2;  // Glass cannon - reduced HP and ATK
             break;
         case CharacterClass::HOBBIT:
-            hp = 100; atk = 15; def = 8;
+            hp = 90; atk = 12; def = 6;  // Balanced tank
             break;
         case CharacterClass::DWARF:
-            hp = 120; atk = 20; def = 10;
+            hp = 110; atk = 14; def = 8;  // Heavy tank - reduced DEF
             break;
         case CharacterClass::ELF:
-            hp = 90; atk = 22; def = 5;
+            hp = 80; atk = 16; def = 4;  // Balanced DPS
             break;
         case CharacterClass::RANGER:
-            hp = 110; atk = 18; def = 7;
+            hp = 85; atk = 15; def = 5;  // All-rounder
             break;
     }
 }

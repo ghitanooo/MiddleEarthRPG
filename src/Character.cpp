@@ -9,8 +9,8 @@ bool Character::isAlive() const {
 }
 
 void Character::takeDamage(int damage) {
-    int netDamage = std::max(damage - defense, 0);
-    currentHp = std::max(currentHp - netDamage, 0);
+    // Damage is already calculated, just apply it
+    currentHp = std::max(currentHp - damage, 0);
 }
 
 void Character::heal(int amount) {
@@ -19,5 +19,5 @@ void Character::heal(int amount) {
 
 int Character::calculateDamage(int enemyDefense) const {
     int netDamage = attack - enemyDefense;
-    return std::max(netDamage, 3);  // Minimum 3 damage instead of 5
+    return std::max(netDamage, 1);  
 }
