@@ -18,7 +18,6 @@ Choose your path: Wizard, Hobbit, Dwarf, Elf, or Ranger...and embark on your adv
 ## 🕹️ How to Play
 | Key | Action |
 |-----|--------|
-| **↑ / ↓** | Navigate menus |
 | **ENTER** | Select / confirm |
 | **A** | Attack in battle |
 | **I** | Open inventory |
