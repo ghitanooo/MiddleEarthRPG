@@ -3,22 +3,15 @@
 A retro-style RPG built with **C++** and **raylib**, where you explore Middle-earth, battle enemies, and grow stronger with every victory.  
 Choose your path: Wizard, Hobbit, Dwarf, Elf, or Ranger...and embark on your adventure!
 
-
-<p align="center">
-  <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExYWV6Zmh3bXl2bms5bTN3dWxnODBrd2w1cWRydWY1YzduOWtvNXJzdyZlcD12MV9naWZzX3NlYXJjaCZjdD1n/g7SFZQGzS4HwQ/giphy.gif" width="400" alt="Hobbits">
-</p>
-
-
 ## Preview
 
 <img width="2202" height="1221" alt="image" src="https://github.com/user-attachments/assets/9b3a04e8-3e64-4001-b2b8-5df4a11aa865" />
 
 ---
 
-## 🕹️ How to Play
+## How to Play
 | Key | Action |
 |-----|--------|
-| **↑ / ↓** | Navigate menus |
 | **ENTER** | Select / confirm |
 | **A** | Attack in battle |
 | **I** | Open inventory |
